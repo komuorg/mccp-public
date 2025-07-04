@@ -38,14 +38,15 @@ jobs:
       - name: Deploy to Azure Container Instance
         run: |
           az container create \
-            --name $CONTAINER_NAME \
-            --resource-group $RESOURCE_GROUP \
-            --image $IMAGE \
+            --name vulnapp \
+            --resource-group myResourceGroup \
+            --image myacr.azurecr.io/vulnapp:latest \
             --cpu 1 --memory 1 \
-            --registry-login-server "$ACR_NAME.azurecr.io" \
-            --registry-username $(az acr credential show --name $ACR_NAME --query username -o tsv) \
-            --registry-password $(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv) \
-            --dns-name-label "${CONTAINER_NAME}-${RANDOM}" \
+            --registry-login-server myacr.azurecr.io \
+            --registry-username $(az acr credential show --name myacr --query username -o tsv) \
+            --registry-password $(az acr credential show --name myacr --query passwords[0].value -o tsv) \
+            --dns-name-label vulnapp-$RANDOM \
             --ports 80 \
-            --location $LOCATION \
+            --os-type Linux \
+            --location eastus \
             --restart-policy Never
