@@ -27,8 +27,9 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          IMAGE="$ACR_NAME.azurecr.io/vulnapp:latest"
-          docker build -t $IMAGE .
+          IMAGE="$ACR_NAME.azurecr.io/vulnerables/web-dvwa:v2"
+          docker pull vulnerables/web-dvwa
+          docker tag vulnerables/web-dvwa:latest $ACR_NAME.azurecr.io/vulnerables/web-dvwa:v2
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: Push image to ACR
@@ -40,8 +41,11 @@ jobs:
           az container create \
             --name $CONTAINER_NAME \
             --resource-group $RESOURCE_GROUP \
-            --image vulnerables/web-dvwa \
+            --image $IMAGE \
             --cpu 1 --memory 1 \
+            --registry-login-server "$ACR_NAME.azurecr.io" \
+            --registry-username $(az acr credential show --name $ACR_NAME --query username -o tsv) \
+            --registry-password $(az acr credential show --name $ACR_NAME --query passwords[0].value -o tsv) \
             --dns-name-label vulnapp-$RANDOM \
             --ports 80 \
             --os-type Linux \
